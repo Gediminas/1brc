@@ -1,0 +1,6 @@
+/bin/
+
+a.out
+callgrind*
+vgcore*
+perf.data*
