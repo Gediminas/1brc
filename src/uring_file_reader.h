@@ -21,7 +21,7 @@ typedef struct {
     char        *buf_start;
     char        *buf[RING_ENTRIES];
 
-    uint16_t     lengths[RING_ENTRIES];  // bytes read fro every buffer (all should be READ_BLOCK_LEN, except the very last)
+    uint16_t     lengths[RING_ENTRIES];  // bytes read for every buffer (all should be READ_BLOCK_LEN, except the very last)
     size_t       total_blocks_requested; // total blocks requested
     uint16_t     blocks_in_queue;        // blocks requested but not received/processed
     uint16_t     next_expected_block;    // to catch out-of-order blocks
@@ -29,7 +29,7 @@ typedef struct {
                                          // happens when file not cached. IOSQE_IO_LINK is slow for cached data
 
     #ifdef DEBUG
-        size_t   out_of_order;
+        size_t   stats_out_of_order;
     #endif
 } ring_file_reader_t;
 
@@ -44,15 +44,11 @@ static inline ring_file_reader_t rfr_create(int fd, size_t fstart, size_t fend) 
         .blocks_in_queue      = 0,
         .next_expected_block    = 0,
         #ifdef DEBUG
-            .out_of_order = 0
+            .stats_out_of_order = 0
         #endif
     };
 
     memset(self.on_hold, 0, RING_ENTRIES * sizeof(bool));
-
-    // //FIX: Only needed because hashing goes outside 3 letter word to both sides, so we set all starts to \n in case the first word is 3-letter
-    // memset(self.buf_start, 10, RING_BUFFER_WRAPUP_LEN); //10 is \n
-    // memset(self.buf_start + self.buf_len - RING_BUFFER_WRAPUP_LEN, 10, RING_BUFFER_WRAPUP_LEN); //10 is \n because of hashing short names
 
     for (int i = 0; i < RING_ENTRIES; i++) {
         self.buf[i] = self.buf_start + RING_BUFFER_WRAPUP_LEN + READ_BLOCK_LEN * i;
@@ -64,8 +60,8 @@ static inline ring_file_reader_t rfr_create(int fd, size_t fstart, size_t fend) 
     params.flags |= IORING_SETUP_SINGLE_ISSUER;
     params.flags |= IORING_SETUP_NO_MMAP;
     // params.flags |= IORING_SETUP_SQ_AFF;
-    int ret = io_uring_queue_init_params(RING_ENTRIES + RING_EXTRA_ENTRIES, &self.ring, &params);
 
+    int ret = io_uring_queue_init_params(RING_ENTRIES + RING_EXTRA_ENTRIES, &self.ring, &params);
     // int ret = io_uring_queue_init(RING_ENTRIES + RING_EXTRA_ENTRIES, &self.ring, 0);
     ___EXPECT(ret == 0, "ring-init");
 
@@ -78,8 +74,8 @@ static inline ring_file_reader_t rfr_create(int fd, size_t fstart, size_t fend) 
 
 static inline void rfr_destroy(ring_file_reader_t *self) {
     #ifdef DEBUG
-        if (self->out_of_order)
-            printf("STAT: blocks out or order: %ld\n", self->out_of_order);
+        if (self->stats_out_of_order)
+            printf("STAT: blocks out or order: %ld\n", self->stats_out_of_order);
     #endif
 
     free(self->buf_start);
@@ -110,7 +106,7 @@ static inline bool rfr_request_next_block(ring_file_reader_t *reader) {
     io_uring_prep_read(sqe, 0, buf, to_read, reader->fpos);
     io_uring_sqe_set_data(sqe, (void*) (size_t) nr);
     io_uring_sqe_set_flags(sqe, IOSQE_FIXED_FILE);
-    // io_uring_sqe_set_flags(sqe, IOSQE_IO_LINK); //with it - 20-40% slower (sometimes much slower) with a cahced file
+    // io_uring_sqe_set_flags(sqe, IOSQE_IO_LINK); // PERF: with it - 20-40% slower (sometimes much slower) with a cahced file
 
     reader->lengths[nr] = to_read;
     reader->total_blocks_requested ++;
@@ -125,6 +121,7 @@ static inline uint8_t rfr_request_next_blocks(ring_file_reader_t *reader) {
     if (!reader->blocks_in_queue)
         return 0;
 
+    // Imitate ring buffer
     memcpy(reader->buf_start, reader->buf_start + reader->buf_len - RING_BUFFER_WRAPUP_LEN, RING_BUFFER_WRAPUP_LEN);
 
     const int ret = io_uring_submit(&reader->ring);
@@ -157,7 +154,7 @@ static inline int rfr_wait_for_block(ring_file_reader_t *reader) {
         reader->on_hold[nr] = true;
 
         #ifdef DEBUG
-            reader->out_of_order ++;
+            reader->stats_out_of_order ++;
         #endif
     }
 
