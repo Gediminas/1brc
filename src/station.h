@@ -13,7 +13,7 @@ typedef struct {
     uint32_t cnt;
 
 #ifndef SAFE
-    int32_t  sum; // PERF: Faster; For real-world temperatures and using threads shoulf be enough
+    int32_t  sum; // PERF: Faster; For real-world temperatures and using threads should be enough
 #else
     int64_t  sum; // PERF: Slower, likely due to cache misses; This is totaly safe, should work even with data from Antarctida or Venus
 #endif

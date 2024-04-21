@@ -3,16 +3,16 @@
 This C implementation tackles [The One Billion Row Challenge](https://github.com/gunnarmorling/1brc) leveraging **SIMD/AVX2** optimizations along with **io_uring** and **mmap** for efficient data handling on **Linux**.
 
 Modes:
-  1. **io_uring** + SIMD/AVX2 on 20-cores: **~580 ms**
-  2. **mmap** + SIMD/AVX2 on 20-cores:  **~630 ms**
+  1. **io_uring** + avx2 on 20-cores: **~580 ms**
+  2. **mmap** + avx2 on 20-cores:  **~625 ms**
 
 Assumptions:
-- Maximum station count: 512
-- Station/city name length: 7 to 26 characters
-- Station/city name hashing tailored for the provided list; adding new stations may cause collisions; In such case, use `bin/1brc_safe` (which is about ~2x slower)...
+- Maximum station count (configurable): 511
+- Station/city name length (configurable): 3 to 26 characters
+- Station/city name hashing optimized for the provided list; adding new stations may lead to collisions; in such case, use `bin/1brc_safe` which is about ~2x slower (further optimization possible but not prioritized)...
 
 
-## BENCHMARK
+## Benchmark
 
 cores:               |       1      |     2        |     4        |     8      |    16      |      20    |
 ---------------------|--------------|--------------|--------------|------------|------------|------------|
@@ -29,7 +29,7 @@ Tested on:
 - Tools: clang 18.1.3, gcc 13.2.0, liburing 2.5, hyperfine 1.18.0
 
 
-**io_uring** + simd/avx2 => `~580 ms`
+**io_uring** + simd/avx2
   ```sh
     ❱ hyperfine --warmup=1 --runs=3 "bin/1brc $FULL"
     Benchmark 1: bin/1brc /home/gds/dev/BB/_data/full.txt
@@ -37,7 +37,7 @@ Tested on:
       Range (min … max):   573.6 ms … 580.3 ms    3 runs
   ```
 
-**mmap** + simd/avx2 => `~630 ms`
+**mmap** + simd/avx2
   ```sh
     ❱ hyperfine --warmup=1 --runs=3 "bin/1brc $FULL --mmap"
     Benchmark 1: bin/1brc /home/gds/dev/BB/_data/full.txt --mmap
@@ -45,8 +45,15 @@ Tested on:
       Range (min … max):   600.4 ms … 655.4 ms    3 runs
   ```
 
+### mmap vs io_uring (gcc)
 
-## BUILD / RUN
+- Tested with GCC-compiled binary
+- File reading only, checks and counts new lines (similar to `wc -l`)
+
+![mmap vs iouring (gcc)](doc/mmap_vs_iouring.png)
+
+
+## Build / Run
 
 Install `clang-18`, `gcc-13`, and `liburing` (see packages in `shell.nix` if anything is missing).  
 
@@ -59,10 +66,11 @@ If  nix + direnv are installed then just do `direnv allow`.
 ```
 
 Notes:
-- ***Note: Clang provides 5-10% better results than GCC***
+- ***Clang provides 5-10% better results than GCC***
 - if does not compile remove or change `-march=skylake` option in `makefile`
 
 
-## FUTURE IMPROVEMENTS
+## Possible Improvements
 
-- use **AVX512** (512-bit) instead of AVX2 (256-bit); Currently, hardware availability is a limitation...
+- `IORING_SETUP_IOPOLL` with io_uring; non-functional on my system
+- **AVX512** (512-bit) instead of AVX2 (256-bit); limited by hardware availability
