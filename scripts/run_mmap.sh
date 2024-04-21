@@ -9,6 +9,4 @@ cd $ROOT
 
 make release
 
-$ROOT/scripts/clear_system_caches.sh
-
 bin/1brc $FILE --mmap

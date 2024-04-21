@@ -1,6 +1,6 @@
-// #include "extraction.h"
 #include "printing.h"
 #include "extraction.h"
+#include <stdbool.h>
 #include <string.h>
 #include <immintrin.h> // avx, avx2, fma, avx-512
 
