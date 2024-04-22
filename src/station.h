@@ -12,10 +12,10 @@ typedef struct {
     int16_t  max; //      likely because they are larger and increase cache misses
     uint32_t cnt;
 
-#ifndef SAFE
-    int32_t  sum; // PERF: Faster; For real-world temperatures and using threads should be enough
-#else
+#ifdef SAFE
     int64_t  sum; // PERF: Slower, likely due to cache misses; This is totaly safe, should work even with data from Antarctida or Venus
+#else
+    int32_t  sum; // PERF: Faster; For real-world temperatures and using threads should be enough
 #endif
 
     uint16_t hash;
