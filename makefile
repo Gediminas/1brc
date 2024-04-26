@@ -1,7 +1,7 @@
 CCG = gcc
 CCC = clang
 
-CFLAGS = -march=skylake -march=native -mtune=native -funroll-loops -Wall -Wextra -Isrc 
+CFLAGS = -march=skylake -march=native -mtune=native -funroll-loops -flto -ffast-math -fomit-frame-pointer -Wall -Wextra -Isrc 
 # CFLAGS = -march=native -mtune=native -Wall -Wextra -Isrc 
 
 LIBS = -luring
