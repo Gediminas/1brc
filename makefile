@@ -78,4 +78,4 @@ $(BIN)/%_debug_gcc: $(SRC)/%.c
 
 -include $(DEP)/*.d
 
-.PHONY: all clean debug release release-debug debug-gcc release-gcc release-debug-gcc gen gen-debug
+.PHONY: all clean debug release release-safe release-debug debug-gcc release-gcc release-debug-gcc gen gen-debug

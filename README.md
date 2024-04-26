@@ -1,10 +1,16 @@
 # C Implementation of "[The One Billion Row Challenge](https://github.com/gunnarmorling/1brc) "
 
-This C implementation tackles [The One Billion Row Challenge](https://github.com/gunnarmorling/1brc) leveraging **SIMD/AVX2** optimizations along with **io_uring** and **mmap** for efficient data handling on **Linux**.
+This C implementation tackles [The One Billion Row Challenge](https://github.com/gunnarmorling/1brc) leveraging **SIMD/AVX2** optimizations along with **io_uring** and **mmap** for efficient data handling on **Linux**.  
+
+Optimized for `12th Gen Intel i7-1280P` CPU.  
 
 Modes:
-  1. **io_uring** + avx2 on 20-cores: **~580 ms**
-  2. **mmap** + avx2 on 20-cores:  **~625 ms**
+  - **io_uring** + avx2
+    - i7-1280P (20-threads): **~580 ms**
+    - i7-12700H: 811 ms
+  - **mmap** + avx2
+    - i7-1280P (20-threads): **~625 ms**
+    - i7-12700H: 862 ms 
 
 Assumptions:
 - Maximum station count (configurable): 511
@@ -23,10 +29,16 @@ cores:               |       1      |     2        |     4        |     8      |
 
 
 Tested on:
-- CPU: [12th Gen Intel i7-1280P (20-core) @ 4.700GHz](https://www.intel.com/content/www/us/en/products/sku/226253/intel-core-i71280p-processor-24m-cache-up-to-4-80-ghz/specifications.html)
-- RAM: 32 GB  (~23 GB free)
-- OS: Linux 6.8.6 x86_64 (2024-04-20), 
+- Lenovo ThinkPad X1 Carbon Gen 10 14.0" 2.8K OLED i7-1280P
+  - CPU: [12th Gen Intel i7-1280P (20-core) @ 4.700GHz](https://www.intel.com/content/www/us/en/products/sku/226253/intel-core-i71280p-processor-24m-cache-up-to-4-80-ghz/specifications.html)
+    - 20 threads, 14 cores (6 P-core @ 4.8 GHz + 8 E-core @ 3.6 GHz)
+    - 24MB Intel® Smart Cache
+  - RAM: 32 GB  (~23 GB free)
+  - SSD: Solidigm P44 Pro PCIe 4.0 NVMe M.2 2TB 7000 MB/s
+- OS: Linux 6.8.6 x86_64 (2024-04-20), NixOS
 - Tools: clang 18.1.3, gcc 13.2.0, liburing 2.5, hyperfine 1.18.0
+- Best average results from 3-5 tries with "hyperfine --warmup=0 --runs=1 ..."
+- After PC rebooted
 
 
 **io_uring** + simd/avx2
