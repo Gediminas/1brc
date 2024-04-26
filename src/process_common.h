@@ -55,12 +55,12 @@ INLINE char* process_record(char *start, char *end, stations_t *stations) {
     station_data_t *s = get_station(stations, start, semi - start);
     _mm_prefetch(s, _MM_HINT_T0); //Likely useless, would be nice to move it some 100-200 CPU cycles before usage
 
-    // const int16_t value = 0;                                                      // PERF: #0 540 ms BASELINE
-    // const int16_t value = extract_temperature_1__direct_calc(end);                // PERF: #1 790 ms
-    // const int16_t value = extract_temperature_2__hash_lookup(semi, end);          // PERF: #2 920 ms
+    // const int16_t value = 0;                                                      // PERF: #0 530 ms BASELINE  
+    // const int16_t value = extract_temperature_1__direct_calc(end);                // PERF: #1 780 ms
+    // const int16_t value = extract_temperature_2__hash_lookup(semi, end);          // PERF: #2 900 ms
     // const int16_t value = extract_temperature_3__combined_lookups(end);           // PERF: #3 630 ms
-    // const int16_t value = extract_temperature_4__simd_swapped_hash_lookup(chunk); // PERF: #5 620 ms  WTF?, map is 2x shorter here [tag: HASH-SWAP]
-    const int16_t value = extract_temperature_5__simd_hash_lookup(chunk);            // PERF: #4 590 ms
+    // const int16_t value = extract_temperature_4__simd_swapped_hash_lookup(chunk); // PERF: #5 610 ms WTF?, map is 2x shorter here [tag: HASH-SWAP]
+    const int16_t value = extract_temperature_5__simd_hash_lookup(chunk);            // PERF: #4 580 ms -> 582
 
     s->cnt++;                        // PERF: Cache misses on `s`
     s->sum += value;
