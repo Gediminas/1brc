@@ -1,4 +1,4 @@
-# C Implementation of "[The One Billion Row Challenge](https://github.com/gunnarmorling/1brc) "
+# C Implementation of "[The One Billion Row Challenge](https://github.com/gunnarmorling/1brc)"
 
 This C implementation tackles [The One Billion Row Challenge](https://github.com/gunnarmorling/1brc) leveraging **SIMD/AVX2** optimizations along with **io_uring** and **mmap** for efficient data handling on **Linux**.  
 
@@ -37,7 +37,7 @@ Tested on:
   - SSD: Solidigm P44 Pro PCIe 4.0 NVMe M.2 2TB 7000 MB/s
 - OS: Linux 6.8.6 x86_64 (2024-04-20), NixOS
 - Tools: clang 18.1.3, gcc 13.2.0, liburing 2.5, hyperfine 1.18.0
-- Best average results from 3-5 tries with "hyperfine --warmup=0 --runs=1 ..."
+- Best average results from 3-5 tries with "hyperfine --warmup=0 --runs=3 ..."
 - After PC rebooted
 
 
